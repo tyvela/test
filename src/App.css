@@ -2,9 +2,6 @@
   text-align: center;
 }
 
-.containerbox {
-  background-image: url("testikuva.jpg");
-}
 .App-header {
   background-color: #282c34;
 
@@ -20,7 +17,6 @@
 }
 
 .App-test {
-  background-image: url("testikuva.jpg");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
