@@ -161,7 +161,7 @@ function App() {
     const openai = new OpenAIApi(configuration);
 
     const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} meters per second. There is a ${weatherData.precipitationProbability}% chance of precipitation.`;
-
+    setPromptInfo(prompt);
     const response = await openai.createImage({
       prompt: prompt,
       n: 1,
