@@ -113,7 +113,7 @@ function App() {
             time: moment().format("HH:mm"),
             temperature: Math.ceil(result.hourly.temperature_2m[index]),
             description: getWeatherDescription(
-              result.hourly.weathercode[index]
+              result.current_weather.weathercode
             ),
             windDirection: "northwest", // You need to calculate the wind direction from the API data
             windSpeed: Math.ceil(result.hourly.windspeed_10m[index]),
@@ -150,7 +150,7 @@ function App() {
   };
 
   useEffect(() => {
-    account();
+    //account();
   }, []);
 
   const { Configuration, OpenAIApi } = require("openai");
@@ -162,12 +162,12 @@ function App() {
 
     const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} meters per second. There is a ${weatherData.precipitationProbability}% chance of precipitation.`;
     setPromptInfo(prompt);
-    const response = await openai.createImage({
+    /*const response = await openai.createImage({
       prompt: prompt,
       n: 1,
       size: "256x256",
     });
-    setResponse(response.data.data[0].url);
+    setResponse(response.data.data[0].url);*/
   };
 
   if (response === "") {
@@ -362,7 +362,12 @@ function App() {
                   },
                 }}
               >
-                <Typography fontSize={20} sx={{ color: "black" }}>
+                <Typography
+                  fontSize={20}
+                  sx={{ color: "black", padding: 1 }}
+                  type="paragraph"
+                  textAlign={"center"}
+                >
                   {promptInfo}
                 </Typography>
               </Dialog>
