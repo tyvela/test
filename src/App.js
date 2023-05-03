@@ -28,14 +28,19 @@ import Select from "@mui/material/Select";
 import InfoIcon from "@mui/icons-material/Info";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
-
+import GrainIcon from "@mui/icons-material/Grain";
+import WeatherIcon2 from "./WeatherIcon2";
+import Switch from "@mui/material/Switch";
 function getWeatherDescription(weatherCode) {
   console.log("Weather code:", weatherCode);
   let description;
 
   switch (weatherCode) {
-    case 1:
+    case 0:
       description = "Clear sky";
+      break;
+    case 1:
+      description = "Mainly clear";
       break;
     case 2:
       description = "Partly cloudy";
@@ -113,7 +118,7 @@ function App() {
             time: moment().format("HH:mm"),
             temperature: Math.ceil(result.hourly.temperature_2m[index]),
             description: getWeatherDescription(
-              result.current_weather.weathercode
+              result.hourly.weathercode[index]
             ),
             windDirection: "northwest", // You need to calculate the wind direction from the API data
             windSpeed: Math.ceil(result.hourly.windspeed_10m[index]),
@@ -133,6 +138,7 @@ function App() {
   const [promptInfo, setPromptInfo] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [info, setInfo] = React.useState(false);
+  const [init, setInit] = React.useState(true);
   const handleChange = (event) => {
     setAge(event.target.value);
   };
@@ -149,25 +155,42 @@ function App() {
     setInfo(!info);
   };
 
-  useEffect(() => {
-    //account();
-  }, []);
+  const [checked, setChecked] = React.useState(true);
 
+  const handleChange2 = () => {
+    setChecked(!checked);
+  };
+
+  const [checked2, setChecked2] = React.useState(true);
+
+  const handleChange3 = () => {
+    setChecked2(!checked2);
+  };
+
+  const [loadingImage, setLoadingImage] = React.useState(false);
   const { Configuration, OpenAIApi } = require("openai");
   const account = async (weatherData) => {
     const configuration = new Configuration({
-      apiKey: "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",
+      apiKey: "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",
     });
     const openai = new OpenAIApi(configuration);
 
-    const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} meters per second. There is a ${weatherData.precipitationProbability}% chance of precipitation.`;
+    const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} km/h. There is a ${weatherData.precipitationProbability}% chance of precipitation.`;
     setPromptInfo(prompt);
-    /*const response = await openai.createImage({
-      prompt: prompt,
-      n: 1,
-      size: "256x256",
-    });
-    setResponse(response.data.data[0].url);*/
+    if (checked2 === false || init === true) {
+      setLoadingImage(true);
+      const response = await openai.createImage({
+        prompt: prompt,
+        n: 1,
+        size: "1024x1024",
+      });
+
+      setResponse(response.data.data[0].url);
+      setLoadingImage(false);
+      if (init === true) {
+        setInit(false);
+      }
+    }
   };
 
   if (response === "") {
@@ -180,15 +203,44 @@ function App() {
   return (
     <div className="App">
       <div className="App-header">
-        <div className="App-test" style={{ backgroundImage: kuva }}></div>
+        <div
+          className="App-test"
+          style={{ backgroundImage: 'url("' + response + '")' }}
+        ></div>
+        <Box
+          className="test"
+          sx={{ width: 500 }}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Stack direction="row" spacing={5}>
+            <Stack alignItems={"center"}>
+              <Typography>Text color</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography>Light</Typography>
+                <Switch onChange={handleChange2}></Switch>
+                <Typography>Dark</Typography>
+              </Stack>
+            </Stack>
+            <Stack alignItems={"center"}>
+              <Typography>generate new image</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography>no</Typography>
+                <Switch onChange={handleChange3}></Switch>
+                <Typography>yes</Typography>
+              </Stack>
+            </Stack>
+          </Stack>
+        </Box>
         <Card className="test" sx={{ width: 500 }} elevation={24}>
           <div style={{ position: "relative" }}>
-            <CardMedia sx={{ height: 500 }} image={kuva} title="weathers" />
+            <CardMedia sx={{ height: 500 }} image={response} title="weathers" />
             <div
               style={{
                 position: "absolute",
                 color: "white",
-                top: "2%",
+                top: 0,
                 left: "0%",
                 transform: "translateX(-50%)",
                 alignItems: "center",
@@ -203,14 +255,14 @@ function App() {
                   border: 0,
                   width: 210,
                   ml: 30,
-                  backgroundColor: "transparent",
-                  "&:focus": {
-                    backgroundColor: "yellow",
+                  ".MuiSelect-standard": {
+                    backgroundColor: "transparent",
+                    ".focus": {
+                      backgroundColor: "transparent",
+                    },
                   },
-                }}
-                style={{
-                  "&:focus": {
-                    backgroundColor: "yellow",
+                  ".MuiSelect-icon": {
+                    display: "none",
                   },
                 }}
                 value={age}
@@ -229,7 +281,11 @@ function App() {
                 <MenuItem value={0}>
                   <Typography
                     variant="h2"
-                    sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    sx={{
+                      color: checked
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(0, 0, 0, 0.8)",
+                    }}
                     textAlign={"left"}
                   >
                     {city[0].Name}
@@ -238,7 +294,11 @@ function App() {
                 <MenuItem value={1}>
                   <Typography
                     variant="h2"
-                    sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    sx={{
+                      color: checked
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(0, 0, 0, 0.8)",
+                    }}
                     textAlign={"left"}
                   >
                     {city[1].Name}
@@ -248,7 +308,11 @@ function App() {
                   <Typography
                     variant="h2"
                     textAlign={"left"}
-                    sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    sx={{
+                      color: checked
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(0, 0, 0, 0.8)",
+                    }}
                   >
                     {city[2].Name}
                   </Typography>
@@ -257,45 +321,62 @@ function App() {
               {!open && (
                 <Typography
                   variant="h5"
-                  sx={{ ml: 28, color: "rgba(255, 255, 255, 0.8)" }}
+                  sx={{
+                    ml: 28,
+                    color: checked
+                      ? "rgba(255, 255, 255, 0.8)"
+                      : "rgba(0, 0, 0, 0.8)",
+                  }}
                 >
                   {moment().format("dddd DD.MM")}
                 </Typography>
               )}
             </div>
+
             <div
               style={{
                 position: "absolute",
                 color: "white",
-                top: 1,
-                right: -10,
-                transform: "translateX(-50%)",
-                alignItems: "center",
+                top: "1.5%",
+                right: 0,
               }}
             >
-              <InfoIcon
-                sx={{ fontSize: 30, color: "rgba(255, 255, 255, 0.9)" }}
-                onClick={handleInfo}
-              ></InfoIcon>
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                color: "white",
-                bottom: "40%",
-                left: "52%",
-                transform: "translateX(-50%)",
-                alignItems: "center",
-              }}
-            >
-              {isLoaded && !info && (
-                <Typography
-                  variant="h2"
-                  sx={{ color: "rgba(255, 255, 255, 0.8)" }}
-                >
-                  {Math.ceil(items.hourly.temperature_2m[index])}&deg;C
-                </Typography>
+              {isLoaded && (
+                <Stack direction="row" spacing={1}>
+                  <Typography
+                    variant="h2"
+                    sx={{
+                      color: checked
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(0, 0, 0, 0.8)",
+                    }}
+                    textAlign={"left"}
+                  >
+                    {Math.ceil(items.hourly.temperature_2m[index])}&deg;C
+                  </Typography>
+                  <InfoIcon
+                    sx={{
+                      fontSize: 30,
+                      mt: 5,
+                      color: checked
+                        ? "rgba(255, 255, 255, 0.8)"
+                        : "rgba(0, 0, 0, 0.8)",
+                    }}
+                    onClick={handleInfo}
+                  ></InfoIcon>
+                </Stack>
               )}
+            </div>
+
+            <div
+              style={{
+                position: "absolute",
+                color: "white",
+                top: "50%",
+                right: "50%",
+              }}
+            >
+              {loadingImage && <CircularProgress></CircularProgress>}
             </div>
             <div
               style={{
@@ -309,44 +390,68 @@ function App() {
                 ml: 2,
               }}
             >
-              <Stack direction="row" spacing={11} sx={{ ml: 10, mt: 1 }}>
-                <Stack alignItems={"center"}>
-                  <CloudIcon
-                    sx={{ fontSize: 30, color: "rgba(255, 255, 255, 0.9)" }}
-                  ></CloudIcon>
-                  <Typography
-                    fontSize={20}
-                    sx={{ color: "rgba(255, 255, 255, 0.9)" }}
-                  >
-                    Cloudy
-                  </Typography>
-                </Stack>
-                <Stack alignItems={"center"}>
-                  <WaterDropIcon
-                    sx={{ fontSize: 30, color: "rgba(255, 255, 255, 0.9)" }}
-                  ></WaterDropIcon>
+              <Stack
+                direction="row"
+                alingItems="center"
+                spacing={1}
+                sx={{ ml: 5, mt: 1 }}
+              >
+                <Box sx={{ width: "30%" }}>
                   {isLoaded && (
-                    <Typography
-                      fontSize={20}
-                      sx={{ color: "rgba(255, 255, 255, 0.9)" }}
-                    >
-                      {items.hourly.precipitation_probability[index]}%
-                    </Typography>
+                    <WeatherIcon2
+                      index={items.hourly.weathercode[index]}
+                      checked={checked}
+                    ></WeatherIcon2>
                   )}
-                </Stack>
-                <Stack alignItems={"center"}>
-                  <AirIcon
-                    sx={{ fontSize: 30, color: "rgba(255, 255, 255, 0.9)" }}
-                  ></AirIcon>
-                  {isLoaded && (
-                    <Typography
-                      fontSize={20}
-                      sx={{ color: "rgba(255, 255, 255, 0.9)" }}
-                    >
-                      {Math.ceil(items.hourly.windspeed_10m[index]) + "km/h"}
-                    </Typography>
-                  )}
-                </Stack>
+                </Box>
+                <Box sx={{ width: "30%" }}>
+                  <Stack alignItems={"center"}>
+                    <WaterDropIcon
+                      sx={{
+                        fontSize: 30,
+                        color: checked
+                          ? "rgba(255, 255, 255, 0.8)"
+                          : "rgba(0, 0, 0, 0.8)",
+                      }}
+                    ></WaterDropIcon>
+                    {isLoaded && (
+                      <Typography
+                        fontSize={20}
+                        sx={{
+                          color: checked
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(0, 0, 0, 0.8)",
+                        }}
+                      >
+                        {items.hourly.precipitation_probability[index]}%
+                      </Typography>
+                    )}
+                  </Stack>
+                </Box>
+                <Box sx={{ width: "30%" }}>
+                  <Stack alignItems={"center"}>
+                    <AirIcon
+                      sx={{
+                        fontSize: 30,
+                        color: checked
+                          ? "rgba(255, 255, 255, 0.8)"
+                          : "rgba(0, 0, 0, 0.8)",
+                      }}
+                    ></AirIcon>
+                    {isLoaded && (
+                      <Typography
+                        fontSize={20}
+                        sx={{
+                          color: checked
+                            ? "rgba(255, 255, 255, 0.8)"
+                            : "rgba(0, 0, 0, 0.8)",
+                        }}
+                      >
+                        {Math.ceil(items.hourly.windspeed_10m[index]) + "km/h"}
+                      </Typography>
+                    )}
+                  </Stack>
+                </Box>
               </Stack>
               <Dialog
                 className="Dialogtest"
