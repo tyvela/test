@@ -28,6 +28,29 @@ import Select from "@mui/material/Select";
 import InfoIcon from "@mui/icons-material/Info";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
+
+function getWeatherDescription(weatherCode) {
+  const weatherCodeMap = {
+    1: "Clear sky",
+    2: "Partly cloudy",
+    3: "Cloudy",
+    80: "Rain shower",
+    81: "Rain",
+    82: "Heavy rain",
+    83: "Rain and thunder",
+    84: "Heavy rain and thunder",
+    // Add more weather codes and their descriptions here
+  };
+
+  return weatherCodeMap[weatherCode] || "Unknown";
+}
+
+function getWindDirectionText(degrees) {
+  const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"];
+  const index = Math.round(((degrees % 360) / 360) * 8);
+  return directions[index];
+}
+
 function App() {
   const [errors, setError] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -63,6 +86,22 @@ function App() {
 
           setIsLoaded(true);
           setItems(result);
+          // Extract weather data for the current hour
+          const weatherData = {
+            city: "Oulu",
+            time: moment().format("HH:mm"),
+            temperature: Math.ceil(result.hourly.temperature_2m[index]),
+            description: getWeatherDescription(
+              result.hourly.weathercode[index]
+            ),
+            windDirection: "northwest", // You need to calculate the wind direction from the API data
+            windSpeed: Math.ceil(result.hourly.windspeed_10m[index]),
+            precipitationProbability:
+              result.hourly.precipitation_probability[index],
+          };
+
+          // Call the account function to generate the image using the weather data
+          account(weatherData);
         },
         (error) => {
           setIsLoaded(true);
@@ -93,14 +132,16 @@ function App() {
   }, []);
 
   const { Configuration, OpenAIApi } = require("openai");
-  const account = async () => {
+  const account = async (weatherData) => {
     const configuration = new Configuration({
       apiKey: "lörslärä",
     });
     const openai = new OpenAIApi(configuration);
+
+    const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} meters per second. There is a ${weatherData.precipitationProbability}% chance of precipitation, so you might want to bring an umbrella or a raincoat just in case.`;
+
     const response = await openai.createImage({
-      prompt:
-        "At 10:00 on May 2, 2023, the current temperature is 7.6 degrees Celsius. heavy rain. The wind is blowing from the northwest with a speed of 10.8 meters per second. There is a 90% chance of precipitation, so you might want to bring an umbrella or a raincoat just in case. The snow depth is 0.1 meters, indicating some snow cover still present.",
+      prompt: prompt,
       n: 1,
       size: "256x256",
     });
