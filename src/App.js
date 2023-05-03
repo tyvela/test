@@ -21,17 +21,34 @@ import ThunderstormIcon from "@mui/icons-material/Thunderstorm";
 import AcUnitIcon from "@mui/icons-material/AcUnit";
 import { OpenAIApi } from "openai";
 import CircularProgress from "@mui/material/CircularProgress";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import InfoIcon from "@mui/icons-material/Info";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
 function App() {
   const [errors, setError] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
   const [index, setIndex] = useState(0);
-  const [response, setResponse] = useState(
-    "https://oaidalleapiprodscus.blob.core.windows.net/private/org-ruOHXw2Q2V2jJAYyOuyWoxxu/user-oUGP1q2hXKRRG6cbD4BRFR2V/img-s2AsAcqjRRNUMJpPGUCZx8eh.png?st=2023-05-02T11%3A51%3A38Z&se=2023-05-02T13%3A51%3A38Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2023-05-01T17%3A37%3A13Z&ske=2023-05-02T17%3A37%3A13Z&sks=b&skv=2021-08-06&sig=3EMHbDH1RN/7aIaA5o2S67PNUG95InMAp%2BTVpW0PkqY%3D"
-  );
+  const [response, setResponse] = useState("src/testikuva.jpg");
+
+  const [city, setCity] = React.useState([
+    { Name: " Oulu", Lat: "65.0142", Long: "25.471" },
+    { Name: "Malmö", Lat: "55.5932", Long: "13.0214" },
+    { Name: " Oslo", Lat: "59.9111", Long: "10.7528" },
+  ]);
+  const [age, setAge] = React.useState(0);
   useEffect(() => {
+    console.log(city);
     fetch(
-      "https://api.open-meteo.com/v1/forecast?latitude=65.0142&longitude=25.4719&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,precipitation_probability,weathercode,snow_depth"
+      "https://api.open-meteo.com/v1/forecast?latitude=" +
+        city[age].Lat +
+        "&longitude=" +
+        city[age].Long +
+        "&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m,precipitation_probability,weathercode,snow_depth"
     )
       .then((res) => res.json())
       .then(
@@ -51,7 +68,25 @@ function App() {
           setIsLoaded(true);
         }
       );
-  }, []);
+  }, [age]);
+
+  const [open, setOpen] = React.useState(false);
+  const [info, setInfo] = React.useState(false);
+  const handleChange = (event) => {
+    setAge(event.target.value);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleInfo = () => {
+    setInfo(!info);
+  };
 
   useEffect(() => {
     //account();
@@ -82,13 +117,10 @@ function App() {
   return (
     <div className="App">
       <div className="App-header">
-        <div
-          className="App-test"
-          style={{ backgroundImage: 'url("' + response + '")' }}
-        ></div>
+        <div className="App-test" style={{ backgroundImage: kuva }}></div>
         <Card className="test" sx={{ width: 500 }} elevation={24}>
           <div style={{ position: "relative" }}>
-            <CardMedia sx={{ height: 500 }} image={response} title="weathers" />
+            <CardMedia sx={{ height: 500 }} image={kuva} title="weathers" />
             <div
               style={{
                 position: "absolute",
@@ -99,18 +131,79 @@ function App() {
                 alignItems: "center",
               }}
             >
-              <Typography
-                variant="h2"
-                sx={{ ml: 20, color: "rgba(255, 255, 255, 0.8)" }}
-              >
-                Oulu
-              </Typography>
-              <Typography
-                variant="h5"
-                sx={{ ml: 25, color: "rgba(255, 255, 255, 0.8)" }}
-              >
-                {moment().format("dddd DD.MM")}
-              </Typography>
+              <Box sx={{ ml: 22 }}>
+                <FormControl fullWidth>
+                  <Select
+                    onClose={handleClose}
+                    onOpen={handleOpen}
+                    variant="standard"
+                    disableUnderline
+                    sx={{
+                      border: 0,
+                    }}
+                    value={age}
+                    onChange={handleChange}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          width: 250,
+                          bgcolor: "rgba(255, 255, 255, 0)",
+                          color: "white",
+                          ml: 9,
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value={0}>
+                      <Typography
+                        variant="h2"
+                        sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      >
+                        {city[0].Name}
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem value={1}>
+                      <Typography
+                        variant="h2"
+                        sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      >
+                        {city[1].Name}
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem value={2}>
+                      <Typography
+                        variant="h2"
+                        sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                      >
+                        {city[2].Name}
+                      </Typography>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              {!open && (
+                <Typography
+                  variant="h5"
+                  sx={{ ml: 25, color: "rgba(255, 255, 255, 0.8)" }}
+                >
+                  {moment().format("dddd DD.MM")}
+                </Typography>
+              )}
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                color: "white",
+                top: 1,
+                right: -10,
+                transform: "translateX(-50%)",
+                alignItems: "center",
+              }}
+            >
+              <InfoIcon
+                sx={{ fontSize: 30, color: "rgba(255, 255, 255, 0.9)" }}
+                onClick={handleInfo}
+              ></InfoIcon>
             </div>
             <div
               style={{
@@ -177,13 +270,16 @@ function App() {
                       fontSize={20}
                       sx={{ color: "rgba(255, 255, 255, 0.9)" }}
                     >
-                      {Math.ceil(items.hourly.windspeed_10m[index]) + "m/s"}
+                      {Math.ceil(items.hourly.windspeed_10m[index]) + "km/h"}
                     </Typography>
                   )}
                 </Stack>
               </Stack>
             </div>
           </div>
+          <Dialog onClose={handleInfo} open={info}>
+            <DialogTitle>Set backup account</DialogTitle>
+          </Dialog>
         </Card>
       </div>
     </div>
