@@ -30,19 +30,40 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 
 function getWeatherDescription(weatherCode) {
-  const weatherCodeMap = {
-    1: "Clear sky",
-    2: "Partly cloudy",
-    3: "Cloudy",
-    80: "Rain shower",
-    81: "Rain",
-    82: "Heavy rain",
-    83: "Rain and thunder",
-    84: "Heavy rain and thunder",
-    // Add more weather codes and their descriptions here
-  };
+  console.log("Weather code:", weatherCode);
+  let description;
 
-  return weatherCodeMap[weatherCode] || "Unknown";
+  switch (weatherCode) {
+    case 1:
+      description = "Clear sky";
+      break;
+    case 2:
+      description = "Partly cloudy";
+      break;
+    case 3:
+      description = "Cloudy";
+      break;
+    case 80:
+      description = "Rain shower";
+      break;
+    case 81:
+      description = "Rain";
+      break;
+    case 82:
+      description = "Heavy rain";
+      break;
+    case 83:
+      description = "Rain and thunder";
+      break;
+    case 84:
+      description = "Heavy rain and thunder";
+      break;
+    // Add more weather codes and their cases here
+    default:
+      description = "Unknown";
+  }
+
+  return description;
 }
 
 function getWindDirectionText(degrees) {
@@ -129,24 +150,24 @@ function App() {
   };
 
   useEffect(() => {
-    //account();
+    account();
   }, []);
 
   const { Configuration, OpenAIApi } = require("openai");
   const account = async (weatherData) => {
     const configuration = new Configuration({
-      apiKey: "lörslärä",
+      apiKey: "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",
     });
     const openai = new OpenAIApi(configuration);
 
-    const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} meters per second. There is a ${weatherData.precipitationProbability}% chance of precipitation, so you might want to bring an umbrella or a raincoat just in case.`;
-    setPromptInfo(prompt);
-    /*const response = await openai.createImage({
+    const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} meters per second. There is a ${weatherData.precipitationProbability}% chance of precipitation.`;
+
+    const response = await openai.createImage({
       prompt: prompt,
       n: 1,
       size: "256x256",
     });
-    setResponse(response.data.data[0].url);*/
+    setResponse(response.data.data[0].url);
   };
 
   if (response === "") {
