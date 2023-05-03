@@ -88,7 +88,7 @@ function App() {
           setItems(result);
           // Extract weather data for the current hour
           const weatherData = {
-            city: "Oulu",
+            city: city[age].Name,
             time: moment().format("HH:mm"),
             temperature: Math.ceil(result.hourly.temperature_2m[index]),
             description: getWeatherDescription(
@@ -109,6 +109,7 @@ function App() {
       );
   }, [age]);
 
+  const [promptInfo, setPromptInfo] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [info, setInfo] = React.useState(false);
   const handleChange = (event) => {
@@ -139,13 +140,13 @@ function App() {
     const openai = new OpenAIApi(configuration);
 
     const prompt = `In ${weatherData.city} at ${weatherData.time}, the current temperature is ${weatherData.temperature} degrees Celsius. ${weatherData.description}. The wind is blowing from the ${weatherData.windDirection} with a speed of ${weatherData.windSpeed} meters per second. There is a ${weatherData.precipitationProbability}% chance of precipitation, so you might want to bring an umbrella or a raincoat just in case.`;
-
-    const response = await openai.createImage({
+    setPromptInfo(prompt);
+    /*const response = await openai.createImage({
       prompt: prompt,
       n: 1,
       size: "256x256",
     });
-    setResponse(response.data.data[0].url);
+    setResponse(response.data.data[0].url);*/
   };
 
   if (response === "") {
@@ -172,60 +173,70 @@ function App() {
                 alignItems: "center",
               }}
             >
-              <Box sx={{ ml: 22 }}>
-                <FormControl fullWidth>
-                  <Select
-                    onClose={handleClose}
-                    onOpen={handleOpen}
-                    variant="standard"
-                    disableUnderline
-                    sx={{
-                      border: 0,
-                    }}
-                    value={age}
-                    onChange={handleChange}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: {
-                          width: 250,
-                          bgcolor: "rgba(255, 255, 255, 0)",
-                          color: "white",
-                          ml: 9,
-                        },
-                      },
-                    }}
+              <Select
+                onClose={handleClose}
+                onOpen={handleOpen}
+                variant="standard"
+                disableUnderline
+                sx={{
+                  border: 0,
+                  width: 210,
+                  ml: 30,
+                  backgroundColor: "transparent",
+                  "&:focus": {
+                    backgroundColor: "yellow",
+                  },
+                }}
+                style={{
+                  "&:focus": {
+                    backgroundColor: "yellow",
+                  },
+                }}
+                value={age}
+                onChange={handleChange}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      width: 250,
+                      bgcolor: "rgba(255, 255, 255, 0)",
+                      color: "white",
+                      ml: 1,
+                    },
+                  },
+                }}
+              >
+                <MenuItem value={0}>
+                  <Typography
+                    variant="h2"
+                    sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    textAlign={"left"}
                   >
-                    <MenuItem value={0}>
-                      <Typography
-                        variant="h2"
-                        sx={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      >
-                        {city[0].Name}
-                      </Typography>
-                    </MenuItem>
-                    <MenuItem value={1}>
-                      <Typography
-                        variant="h2"
-                        sx={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      >
-                        {city[1].Name}
-                      </Typography>
-                    </MenuItem>
-                    <MenuItem value={2}>
-                      <Typography
-                        variant="h2"
-                        sx={{ color: "rgba(255, 255, 255, 0.8)" }}
-                      >
-                        {city[2].Name}
-                      </Typography>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
+                    {city[0].Name}
+                  </Typography>
+                </MenuItem>
+                <MenuItem value={1}>
+                  <Typography
+                    variant="h2"
+                    sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    textAlign={"left"}
+                  >
+                    {city[1].Name}
+                  </Typography>
+                </MenuItem>
+                <MenuItem value={2}>
+                  <Typography
+                    variant="h2"
+                    textAlign={"left"}
+                    sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                  >
+                    {city[2].Name}
+                  </Typography>
+                </MenuItem>
+              </Select>
               {!open && (
                 <Typography
                   variant="h5"
-                  sx={{ ml: 25, color: "rgba(255, 255, 255, 0.8)" }}
+                  sx={{ ml: 28, color: "rgba(255, 255, 255, 0.8)" }}
                 >
                   {moment().format("dddd DD.MM")}
                 </Typography>
@@ -256,7 +267,7 @@ function App() {
                 alignItems: "center",
               }}
             >
-              {isLoaded && (
+              {isLoaded && !info && (
                 <Typography
                   variant="h2"
                   sx={{ color: "rgba(255, 255, 255, 0.8)" }}
@@ -316,11 +327,26 @@ function App() {
                   )}
                 </Stack>
               </Stack>
+              <Dialog
+                className="Dialogtest"
+                onClose={handleInfo}
+                open={info}
+                maxWidth={"xs"}
+                hideBackdrop
+                PaperProps={{
+                  style: {
+                    backgroundColor: "rgba(255, 255, 255, 0.5)",
+
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                <Typography fontSize={20} sx={{ color: "black" }}>
+                  {promptInfo}
+                </Typography>
+              </Dialog>
             </div>
           </div>
-          <Dialog onClose={handleInfo} open={info}>
-            <DialogTitle>Set backup account</DialogTitle>
-          </Dialog>
         </Card>
       </div>
     </div>

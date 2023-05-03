@@ -26,6 +26,9 @@
   position: absolute;
   filter: blur(20px);
 }
+
+.Dialogtest {
+}
 .test {
   z-index: 11;
 }
